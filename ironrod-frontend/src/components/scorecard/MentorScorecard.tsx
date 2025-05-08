@@ -1,3 +1,8 @@
+"use client"
+"use client"
+"use client"
+"use client"
+"use client"
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/Table'
