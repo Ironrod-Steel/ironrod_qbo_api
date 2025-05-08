@@ -1,0 +1,14 @@
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Raw report JSON (optional—if you don’t want huge files in Git)
+raw_reports/
+
+# Environment file with secrets
+.env
+.env
+.env
