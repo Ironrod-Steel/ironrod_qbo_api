@@ -98,39 +98,36 @@ def get_balance_sheet():
 # ────────────────────────────────────────────────────────────────
 # Real-Time Revenue via Query API
 # ────────────────────────────────────────────────────────────────
+from collections import defaultdict
+
 @app.get("/api/qbo/realtime/revenue", response_model=List[RTPoint])
 async def api_realtime_revenue():
     thirty_days_ago = (datetime.utcnow() - timedelta(days=30)).date().isoformat()
-    query = f"""
-      SELECT TxnDate, SUM(Line.Amount) AS Total
-      FROM Invoice
-      WHERE TxnDate >= '{thirty_days_ago}'
-      GROUP BY TxnDate
-      ORDER BY TxnDate
-    """
+    query = f"SELECT Id, TxnDate, Line FROM Invoice WHERE TxnDate >= '{thirty_days_ago}'"
+
     try:
-        rows = pull_reports.run_qbo_query(query)
-    except HTTPException:
-        raise
+        invoices = pull_reports.run_qbo_query(query)
+        print("📦 Invoice results →", invoices)
     except Exception as e:
-        logger.exception("Error running QBO query for realtime revenue")
-        raise HTTPException(500, f"Server error querying daily revenue: {e}")
+        logger.exception("Error pulling invoice revenue")
+        raise HTTPException(500, f"Failed to pull revenue: {e}")
 
-    points: List[RTPoint] = []
-    for row in rows:
-        # parse date
-        try:
-            ts = datetime.fromisoformat(row.get("TxnDate"))
-        except Exception:
-            continue
-        # parse amount
-        raw_val = row.get("Total", "")
-        try:
-            val = float(raw_val) if raw_val not in (None, "") else 0.0
-        except (ValueError, TypeError):
-            val = 0.0
+    # Manually sum Line.Amount by date
+    revenue_by_date = defaultdict(float)
+    for invoice in invoices:
+        date = invoice.get("TxnDate")
+        for line in invoice.get("Line", []):
+            try:
+                amount = float(line.get("Amount", 0))
+                revenue_by_date[date] += amount
+            except Exception:
+                continue
 
-        points.append(RTPoint(timestamp=ts, value=val))
+    # Convert to RTPoint list
+    points = [
+        RTPoint(timestamp=datetime.fromisoformat(date), value=total)
+        for date, total in sorted(revenue_by_date.items())
+    ]
 
     return points
 
