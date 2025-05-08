@@ -1,44 +1,34 @@
-"use client"
-"use client"
-"use client"
-"use client"
-"use client"
-"use client"
-import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+"use client";
+
+import React from "react";
 import {
   LineChart,
   Line,
   XAxis,
   YAxis,
+  CartesianGrid,
   Tooltip,
-  ResponsiveContainer
-} from 'recharts'
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
-interface DataPoint { timestamp: string; value: number }
-interface LiveProps { endpoint: string; title: string; pollInterval?: number }
+export interface LiveLineChartProps {
+  data: Array<{ [key: string]: any }>;
+  xKey: string;
+  dataKey: string;
+}
 
-export default function LiveLineChart({ endpoint, title, pollInterval = 5000 }: LiveProps) {
-  const [data, setData] = useState<DataPoint[]>([])
-
-  useEffect(() => {
-    const fetch = () => axios.get<DataPoint[]>(endpoint).then(r => setData(r.data))
-    fetch()
-    const iv = setInterval(fetch, pollInterval)
-    return () => clearInterval(iv)
-  }, [endpoint, pollInterval])
-
+export default function LiveLineChart({ data, xKey, dataKey }: LiveLineChartProps) {
   return (
-    <div>
-      <h2 className="text-lg font-medium mb-2">{title}</h2>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data}>
-          <XAxis dataKey="timestamp" />
-          <YAxis />
-          <Tooltip />
-          <Line type="monotone" dataKey="value" dot={false} />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  )
+    <ResponsiveContainer width="100%" height={400}>
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey={xKey} />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line type="monotone" dataKey={dataKey} stroke="#8884d8" activeDot={{ r: 8 }} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
 }

@@ -1,38 +1,39 @@
-"use client"
-"use client"
-"use client"
-"use client"
-"use client"
-"use client"
-import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+"use client";
+
+import React from "react";
 import {
-  LineChart as ReLineChart,
+  LineChart as RechartsLineChart,
   Line,
   XAxis,
   YAxis,
+  CartesianGrid,
   Tooltip,
-  ResponsiveContainer
-} from 'recharts'
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
-interface LineDataPoint { date: string; amount: number }
-interface LineProps { endpoint: string; xKey: string; dataKey: string }
+export interface LineChartProps {
+  data: Array<{ [key: string]: any }>;
+  xKey: string;
+  dataKey: string;
+}
 
-export default function LineChart({ endpoint, xKey, dataKey }: LineProps) {
-  const [data, setData] = useState<LineDataPoint[]>([])
-
-  useEffect(() => {
-    axios.get<LineDataPoint[]>(endpoint).then(res => setData(res.data))
-  }, [endpoint])
-
+export default function LineChart({ data, xKey, dataKey }: LineChartProps) {
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <ReLineChart data={data}>
+    <ResponsiveContainer width="100%" height={400}>
+      <RechartsLineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey={xKey} />
         <YAxis />
         <Tooltip />
-        <Line type="monotone" dataKey={dataKey} dot={false} />
-      </ReLineChart>
+        <Legend />
+        <Line
+          type="monotone"
+          dataKey={dataKey}
+          stroke="#8884d8"
+          activeDot={{ r: 8 }}
+        />
+      </RechartsLineChart>
     </ResponsiveContainer>
-  )
+  );
 }

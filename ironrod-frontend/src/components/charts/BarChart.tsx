@@ -1,38 +1,34 @@
-"use client"
-"use client"
-"use client"
-"use client"
-"use client"
-"use client"
-import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+"use client";
+
+import React from "react";
 import {
-  BarChart as ReBarChart,
+  BarChart as RechartsBarChart,
   Bar,
   XAxis,
   YAxis,
+  CartesianGrid,
   Tooltip,
-  ResponsiveContainer
-} from 'recharts'
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
-interface BarDataPoint { account: string; amount: number }
-interface BarProps { endpoint: string; xKey: string; dataKey: string }
+export interface BarChartProps {
+  data: Array<{ [key: string]: any }>;
+  xKey: string;
+  dataKey: string;
+}
 
-export default function BarChart({ endpoint, xKey, dataKey }: BarProps) {
-  const [data, setData] = useState<BarDataPoint[]>([])
-
-  useEffect(() => {
-    axios.get<BarDataPoint[]>(endpoint).then(res => setData(res.data))
-  }, [endpoint])
-
+export default function BarChart({ data, xKey, dataKey }: BarChartProps) {
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <ReBarChart data={data}>
+    <ResponsiveContainer width="100%" height={400}>
+      <RechartsBarChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey={xKey} />
         <YAxis />
         <Tooltip />
-        <Bar dataKey={dataKey} />
-      </ReBarChart>
+        <Legend />
+        <Bar dataKey={dataKey} fill="#8884d8" />
+      </RechartsBarChart>
     </ResponsiveContainer>
-  )
+  );
 }
