@@ -1,15 +1,19 @@
-# main.py
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 import requests
-import pull_reports   # your existing pull_reports module
 import logging
 
-logger = logging.getLogger("uvicorn.error")
-app = FastAPI()
+# Local module for QuickBooks report pulling
+import pull_reports
 
+# Set up logger for error handling
+logger = logging.getLogger("uvicorn.error")
+
+# Initialize FastAPI app
+app = FastAPI()
 # ────────────────────────────────────────────────────────────────
 # Pydantic models
 # ────────────────────────────────────────────────────────────────
@@ -81,34 +85,21 @@ async def api_pl():
 # ────────────────────────────────────────────────────────────────
 # Balance Sheet endpoint
 # ────────────────────────────────────────────────────────────────
-@app.get("/api/qbo/bs", response_model=List[BSItem])
-async def api_bs():
-    df = get_df("BalanceSheet")
-    cols = list(df.columns)
-    if not cols:
-        return []
-
-    acct_col, total_col = cols[0], cols[-1]
-    items: List[BSItem] = []
-
-    for _, row in df.iterrows():
-        account = row.get(acct_col) or ""
-        raw_total = row.get(total_col, "")
-        try:
-            total = float(raw_total) if raw_total not in (None, "") else 0.0
-        except (ValueError, TypeError):
-            total = 0.0
-
-        items.append(BSItem(account=account, total=total))
-
-    return items
-
+@app.get("/api/qbo/bs")
+def get_balance_sheet():
+    try:
+        raw_json = pull_reports.fetch_report("BalanceSheet")
+        print("🔍 Raw Balance Sheet JSON →", raw_json)  # ← ADD THIS
+        rows = pull_reports.flatten_balance_sheet(raw_json)
+        return JSONResponse(content=rows)
+    except Exception as e:
+        logger.exception("Error fetching Balance Sheet")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch balance sheet: {e}")
 # ────────────────────────────────────────────────────────────────
 # Real-Time Revenue via Query API
 # ────────────────────────────────────────────────────────────────
 @app.get("/api/qbo/realtime/revenue", response_model=List[RTPoint])
 async def api_realtime_revenue():
-    # Build a SQL-style query for the last 30 days of Invoice totals
     thirty_days_ago = (datetime.utcnow() - timedelta(days=30)).date().isoformat()
     query = f"""
       SELECT TxnDate, SUM(Line.Amount) AS Total

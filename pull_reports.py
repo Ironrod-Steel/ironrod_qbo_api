@@ -197,6 +197,28 @@ def parse_report(data: dict) -> pd.DataFrame:
 
     return pd.DataFrame(rows, columns=headers)
 
+def flatten_balance_sheet(data: dict) -> List[Dict[str, float]]:
+    out = []
+
+    def walk_rows(rows: List[Dict]):
+        for row in rows:
+            if "ColData" in row and row.get("type") == "Data":
+                coldata = row["ColData"]
+                if len(coldata) >= 2:
+                    label = coldata[0].get("value", "").strip()
+                    value = coldata[1].get("value", "")
+                    try:
+                        out.append({"account": label, "total": float(value)})
+                    except ValueError:
+                        continue
+            elif "Rows" in row:
+                walk_rows(row["Rows"].get("Row", []))
+
+    top_rows = data.get("Rows", {}).get("Row", [])
+    walk_rows(top_rows)
+    return out
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Query Helper
 # ──────────────────────────────────────────────────────────────────────────────

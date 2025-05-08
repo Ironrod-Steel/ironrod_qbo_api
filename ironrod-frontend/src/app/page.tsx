@@ -13,9 +13,12 @@ export default function DashboardPage() {
   const [revData, setRevData] = useState([]);
 
   useEffect(() => {
-    axios.get("/api/qbo/pl").then(res => setPlData(res.data));
-    axios.get("/api/qbo/bs").then(res => setBsData(res.data));
-    axios.get("/api/qbo/realtime/revenue").then(res => setRevData(res.data));
+    axios.get("/api/qbo/pl").then((res) => setPlData(res.data));
+    axios.get("/api/qbo/bs").then((res) => {
+      console.log("Balance Sheet data →", res.data); // 👈 Add this line
+      setBsData(res.data);
+    });
+    axios.get("/api/qbo/realtime/revenue").then((res) => setRevData(res.data));
   }, []);
 
   return (

@@ -23,9 +23,11 @@ export default function BarChart({ data, xKey, dataKey }: BarChartProps) {
     <ResponsiveContainer width="100%" height={400}>
       <RechartsBarChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey={xKey} />
+        <XAxis dataKey={xKey} angle={-45} interval={0} />
         <YAxis />
-        <Tooltip />
+        <Tooltip
+          formatter={(value: number) => `$${parseFloat(value).toLocaleString()}`}
+        />
         <Legend />
         <Bar dataKey={dataKey} fill="#8884d8" />
       </RechartsBarChart>

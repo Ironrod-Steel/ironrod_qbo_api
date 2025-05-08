@@ -23,9 +23,11 @@ export default function LineChart({ data, xKey, dataKey }: LineChartProps) {
     <ResponsiveContainer width="100%" height={400}>
       <RechartsLineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey={xKey} />
+        <XAxis dataKey={xKey} angle={-45} interval={0} />
         <YAxis />
-        <Tooltip />
+        <Tooltip
+          formatter={(value: number) => `$${parseFloat(value).toLocaleString()}`}
+        />
         <Legend />
         <Line
           type="monotone"
